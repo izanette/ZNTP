@@ -28,6 +28,7 @@ void ZNTP::begin(unsigned long gmtOffset)
 {
     m_gmtOffset    = gmtOffset;
     m_gmtOffsetSet = true;
+    sync();
 }
 
 void ZNTP::begin(String NTPServerName /*= ""*/, unsigned long gmtOffset /*= 0*/)
@@ -35,12 +36,14 @@ void ZNTP::begin(String NTPServerName /*= ""*/, unsigned long gmtOffset /*= 0*/)
     m_NTPServerName = NTPServerName;
     m_gmtOffset     = gmtOffset;
     m_gmtOffsetSet  = true;
+    sync();
 }
 
 void ZNTP::begin(String timeZoneDBAPIKey, String timeZoneDBZone)
 {
     m_timeZoneDBAPIKey = timeZoneDBAPIKey;
     m_timeZoneDBZone   = timeZoneDBZone;
+    sync();
 }
 
 void ZNTP::begin(String NTPServerName, String timeZoneDBAPIKey, String timeZoneDBZone)
@@ -48,6 +51,7 @@ void ZNTP::begin(String NTPServerName, String timeZoneDBAPIKey, String timeZoneD
     m_NTPServerName    = NTPServerName;
     m_timeZoneDBAPIKey = timeZoneDBAPIKey;
     m_timeZoneDBZone   = timeZoneDBZone;
+    sync();
 }
 
 void ZNTP::initialize()
@@ -139,7 +143,10 @@ void ZNTP::sync(bool force /*= false*/)
     if (!cb)
     {
         ZNTP_PRINTLN(F("no packet yet"));
-        m_lastNTPUpdate += 5000; // wait 5s to try again
+        if (m_ntpTimeSet)
+            m_lastNTPUpdate += 5000; // wait 5s to try again
+        else
+            ydelay(5000);
         return;
     }
 
